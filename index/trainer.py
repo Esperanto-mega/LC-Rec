@@ -99,7 +99,7 @@ class Trainer(object):
             total_loss += loss.item()
             total_recon_loss += loss_recon.item()
             
-            wandb.log({'Total_Loss': loss, 'Rec_Loss': loss_recon, 'RQ_Loss': loss - loss_recon)
+            wandb.log({'Total_Loss': loss, 'Rec_Loss': loss_recon, 'RQ_Loss': loss - loss_recon})
 
         return total_loss, total_recon_loss
 
