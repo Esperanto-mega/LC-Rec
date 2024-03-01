@@ -17,6 +17,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Index")
 
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
+    parser.add_argument('--rq_lr', type=float, default=1e-2, help='rq-vae learning rate')
     parser.add_argument('--epochs', type=int, default=5000, help='number of epochs')
     parser.add_argument('--batch_size', type=int, default=1024, help='batch size')
     parser.add_argument('--num_workers', type=int, default=4, )
