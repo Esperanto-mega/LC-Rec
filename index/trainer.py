@@ -19,6 +19,7 @@ class Trainer(object):
         self.logger = logging.getLogger()
 
         self.lr = args.lr
+        self.rq_lr = args.rq_lr
         self.learner = args.learner
         self.weight_decay = args.weight_decay
         self.epochs = args.epochs
@@ -42,7 +43,8 @@ class Trainer(object):
 
         params = self.model.parameters()
         learner =  self.learner
-        learning_rate = self.lr
+        base_learning_rate = self.lr
+        rq_learning_rate = self.rq_lr
         weight_decay = self.weight_decay
 
         if learner.lower() == "adam":
@@ -62,9 +64,11 @@ class Trainer(object):
                 params, lr=learning_rate, weight_decay=weight_decay
             )
         elif learner.lower() == 'adamw':
-            optimizer = optim.AdamW(
-                params, lr=learning_rate, weight_decay=weight_decay
-            )
+            params_dict = [{'params': self.model.encoder.parameters(), 'lr': base_learning_rate, 'weight_decay': weight_decay},
+                           {'params': self.model.decoder.parameters(), 'lr': base_learning_rate, 'weight_decay': weight_decay},
+                           {'params': self.model.rq.parameters(), 'lr': rq_learning_rate, 'weight_decay': weight_decay}]
+            optimizer = optim.AdamW(params_dict)
+            # optimizer = optim.AdamW(params, lr=learning_rate, weight_decay=weight_decay)
         else:
             self.logger.warning(
                 "Received unrecognized optimizer, set default Adam optimizer"
