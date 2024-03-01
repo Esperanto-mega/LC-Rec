@@ -9,6 +9,8 @@ from tqdm import tqdm
 from utils import ensure_dir,set_color,get_local_time
 import os
 
+import wandb
+
 class Trainer(object):
 
     def __init__(self, args, model):
@@ -30,6 +32,7 @@ class Trainer(object):
 
         self.best_loss = np.inf
         self.best_collision_rate = np.inf
+        self.best_ckpt = "best_model.pth"
         self.best_loss_ckpt = "best_loss_model.pth"
         self.best_collision_ckpt = "best_collision_model.pth"
         self.optimizer = self._build_optimizer()
@@ -95,6 +98,8 @@ class Trainer(object):
             self.optimizer.step()
             total_loss += loss.item()
             total_recon_loss += loss_recon.item()
+            
+            wandb.log({'Total Loss': loss, 'Rec Loss': loss_recon, 'RQ Loss': loss - loss_recon)
 
         return total_loss, total_recon_loss
 
@@ -111,28 +116,34 @@ class Trainer(object):
             )
         indices_set = set()
         num_sample = 0
+        total_loss = 0
         for batch_idx, data in enumerate(iter_data):
             num_sample += len(data)
             data = data.to(self.device)
-            indices = self.model.get_indices(data)
+            
+            # indices = self.model.get_indices(data)
+            
+            out, rq_loss, indices = self.model(data)
+            loss, loss_recon = self.model.compute_loss(out, rq_loss, xs=data)
             indices = indices.view(-1,indices.shape[-1]).cpu().numpy()
+            total_loss += loss.item()
             for index in indices:
                 code = "-".join([str(int(_)) for _ in index])
                 indices_set.add(code)
 
         collision_rate = (num_sample - len(indices_set))/num_sample
 
-        return collision_rate
+        return total_loss, collision_rate
 
-    def _save_checkpoint(self, epoch, collision_rate=1, ckpt_file=None):
+    def _save_checkpoint(self, epoch, loss = 0, collision_rate = 1, ckpt_file=None):
 
         ckpt_path = os.path.join(self.ckpt_dir,ckpt_file) if ckpt_file \
             else os.path.join(self.ckpt_dir, 'epoch_%d_collision_%.4f_model.pth' % (epoch, collision_rate))
         state = {
             "args": self.args,
             "epoch": epoch,
-            "best_loss": self.best_loss,
-            "best_collision_rate": self.best_collision_rate,
+            "best_loss": loss,
+            "best_collision_rate": collision_rate,
             "state_dict": self.model.state_dict(),
             "optimizer": self.optimizer.state_dict(),
         }
@@ -157,7 +168,7 @@ class Trainer(object):
 
     def fit(self, data):
 
-        cur_eval_step = 0
+        # cur_eval_step = 0
 
         for epoch_idx in range(self.epochs):
             # train
@@ -169,24 +180,33 @@ class Trainer(object):
             )
             self.logger.info(train_loss_output)
 
+            '''
             if train_loss < self.best_loss:
                 self.best_loss = train_loss
-                # self._save_checkpoint(epoch=epoch_idx,ckpt_file=self.best_loss_ckpt)
+                self._save_checkpoint(epoch=epoch_idx,ckpt_file=self.best_loss_ckpt)
+            '''
 
             # eval
             if (epoch_idx + 1) % self.eval_step == 0:
                 valid_start_time = time()
-                collision_rate = self._valid_epoch(data)
+                loss, collision_rate = self._valid_epoch(data)
 
+                # best ckpt
+                if loss < self.best_loss and collision_rate < self.best_collision_rate:
+                    self.best_loss = loss
+                    self.best_collision_rate = collision_rate
+                    self._save_checkpoint(epoch_idx, loss, collision_rate, self.best_ckpt)
+
+                # best loss ckpt
+                if loss < self.best_loss:
+                    self.best_loss = loss
+                    self._save_checkpoint(epoch_idx, loss, collision_rate, self.best_loss_ckpt)
+                
+                # best collision ckpt
                 if collision_rate < self.best_collision_rate:
                     self.best_collision_rate = collision_rate
-                    cur_eval_step = 0
-                    self._save_checkpoint(epoch_idx, collision_rate=collision_rate,
-                                          ckpt_file=self.best_collision_ckpt)
-                else:
-                    cur_eval_step += 1
-
-
+                    self._save_checkpoint(epoch_idx, loss, collision_rate, self.best_collision_ckpt)
+                
                 valid_end_time = time()
                 valid_score_output = (
                     set_color("epoch %d evaluating", "green")
