@@ -11,6 +11,8 @@ from datasets import EmbDataset
 from models.rqvae import RQVAE
 from trainer import  Trainer
 
+import wandb
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Index")
 
@@ -57,6 +59,7 @@ if __name__ == '__main__':
 
     args = parse_args()
     print(args)
+    wandb.init(config=args, reinit=True)
 
     logging.basicConfig(level=logging.DEBUG)
 
