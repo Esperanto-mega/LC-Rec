@@ -9,7 +9,16 @@ class EmbDataset(data.Dataset):
 
         self.data_path = data_path
         # self.embeddings = np.fromfile(data_path, dtype=np.float32).reshape(16859,-1)
-        self.embeddings = np.load(data_path)
+        # self.embeddings = np.load(data_path)
+        names = ['emb']
+        usecols = [2]
+        tsv_data = pd.read_csv(data_path, sep = '\t',usecols = usecols, names = names, quotechar=None, quoting=3)
+        features = tsv_data['emb'].values.tolist()
+        num_data = len(features)
+        for i in range(num_data):
+            features[i] = [float(s) for s in features[i].split(' ')]
+        self.embeddings = np.array(features)
+        assert self.embeddings.shape[0] == num_data
         self.dim = self.embeddings.shape[-1]
 
     def __getitem__(self, index):
