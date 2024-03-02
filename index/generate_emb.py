@@ -69,26 +69,24 @@ data = EmbDataset(infer_args.data_path)
 
 # Model checkpoint
 model = RQVAE(in_dim = data.dim,
-                num_emb_list = args.num_emb_list,
-                e_dim = args.e_dim,
-                layers = args.layers,
-                dropout_prob = args.dropout_prob,
-                bn = args.bn,
-                loss_type = args.loss_type,
-                quant_loss_weight = args.quant_loss_weight,
-                kmeans_init = args.kmeans_init,
-                kmeans_iters = args.kmeans_iters,
-                sk_epsilons = args.sk_epsilons,
-                sk_iters = args.sk_iters)
+              num_emb_list = args.num_emb_list,
+              e_dim = args.e_dim,
+              layers = args.layers,
+              dropout_prob = args.dropout_prob,
+              bn = args.bn,
+              loss_type = args.loss_type,
+              quant_loss_weight = args.quant_loss_weight,
+              kmeans_init = args.kmeans_init,
+              kmeans_iters = args.kmeans_iters,
+              sk_epsilons = args.sk_epsilons,
+              sk_iters = args.sk_iters)
 model.load_state_dict(state_dict)
 model = model.to(device)
 model.eval()
 print(model)
 
 # DataLoader
-data_loader = DataLoader(data,num_workers=args.num_workers,
-                            batch_size=64, shuffle=False,
-                            pin_memory=True)
+data_loader = DataLoader(data, num_workers = args.num_workers, batch_size = 64, shuffle = False, pin_memory = True)
 
 # Infer
 all_inference = []
@@ -121,5 +119,6 @@ for emb in all_inference:
 
 # Write to tsv
 df = pd.DataFrame(all_results)
-print(df)
+# print(df)
+# header = 0: w/o column name; index = False: w/o index column 
 df.to_csv(infer_args.save_path, sep = '\t', header = 0, index = False)
