@@ -137,6 +137,8 @@ class Trainer(object):
 
         collision_rate = (num_sample - len(indices_set))/num_sample
 
+        wandb.log({'Val_Total_Loss': total_loss, 'Val_Collision_Rate': collision_rate})
+
         return total_loss, collision_rate
 
     def _save_checkpoint(self, epoch, loss = 0, collision_rate = 1, ckpt_file=None):
