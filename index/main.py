@@ -33,12 +33,12 @@ def parse_args():
     parser.add_argument("--loss_type", type=str, default="mse", help="loss_type")
     parser.add_argument("--kmeans_init", type=bool, default=True, help="use kmeans_init or not")
     parser.add_argument("--kmeans_iters", type=int, default=100, help="max kmeans iters")
-    parser.add_argument('--sk_epsilons', type=float, nargs='+', default=[0.0, 0.0, 0.0], help="sinkhorn epsilons")
+    parser.add_argument('--sk_epsilons', type=float, nargs='+', default=[0.0, 0.0, 0.0, 0.003], help="sinkhorn epsilons")
     parser.add_argument("--sk_iters", type=int, default=50, help="max sinkhorn iters")
 
     parser.add_argument("--device", type=str, default="cuda:1", help="gpu or cpu")
 
-    parser.add_argument('--num_emb_list', type=int, nargs='+', default=[256,256,256], help='emb num of every vq')
+    parser.add_argument('--num_emb_list', type=int, nargs='+', default=[256,256,256,256], help='emb num of every vq')
     parser.add_argument('--e_dim', type=int, default=32, help='vq codebook embedding size')
     parser.add_argument('--quant_loss_weight', type=float, default=1.0, help='vq quantion loss weight')
     parser.add_argument('--layers', type=int, nargs='+', default=[2048,1024,512,256,128,64], help='hidden sizes of every layer')
