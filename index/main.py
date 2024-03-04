@@ -25,6 +25,9 @@ def parse_args():
     parser.add_argument('--learner', type=str, default="AdamW", help='optimizer')
     parser.add_argument("--data_path", type=str, default="../data/Games/Games.emb-llama-td.npy", help="training data path.")
     parser.add_argument("--val_data_path", type=str, default="../data/Games/Games.emb-llama-td.npy", help="validation data path.")
+    parser.add_argument("--std_norm", type=bool, default=False, help="use std_norm or not")
+    parser.add_argument('--mean', type=float, default=0.0018542567160867, help='data mean')
+    parser.add_argument('--std', type=float, default=0.1299408268195650, help='data std')
 
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='l2 regularization weight')
     parser.add_argument("--dropout_prob", type=float, default=0.0, help="dropout ratio")
@@ -64,8 +67,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     """build dataset"""
-    data = EmbDataset(args.data_path)
-    val_data = EmbDataset(args.val_data_path)
+    data = EmbDataset(args.data_path, args.std_norm, args.mean, args.std)
+    val_data = EmbDataset(args.val_data_path, args.std_norm, args.mean, args.std)
     model = RQVAE(in_dim=data.dim,
                   num_emb_list=args.num_emb_list,
                   e_dim=args.e_dim,
