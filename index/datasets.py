@@ -6,7 +6,7 @@ import pandas as pd
 
 class EmbDataset(data.Dataset):
 
-    def __init__(self,data_path):
+    def __init__(self, data_path, std_norm = False, mean = 0, std = 1):
 
         self.data_path = data_path
         # self.embeddings = np.fromfile(data_path, dtype=np.float32).reshape(16859,-1)
@@ -18,7 +18,10 @@ class EmbDataset(data.Dataset):
         num_data = len(features)
         for i in range(num_data):
             features[i] = [float(s) for s in features[i].split(' ')]
-        self.embeddings = np.array(features)
+        if std_norm:
+            self.embeddings = (np.array(features) - mean) / std
+        else:
+            self.embeddings = np.array(features)
         assert self.embeddings.shape[0] == num_data
         self.dim = self.embeddings.shape[-1]
 
