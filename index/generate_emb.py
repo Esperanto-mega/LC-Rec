@@ -46,9 +46,10 @@ def get_collision_item(all_indices_str):
 def parse_args():
     parser = argparse.ArgumentParser(description = "Index")
 
-    parser.add_argument("--data_path", type = str, default = "", help = "Infer data path.")
+    parser.add_argument("--data_path", type=str, default="", help = "infer data path.")
     parser.add_argument("--ckpt_path", type=str, default="", help="model checkpoint for infer")
     parser.add_argument("--save_path", type=str, default="", help="output directory for result")
+    parser.add_argument("--infer_batchsize", type=int, default=64, help="data batchsize for infer")
     parser.add_argument("--device", type=str, default="cuda:0", help="gpu or cpu")
 
     return parser.parse_args()
@@ -86,7 +87,7 @@ model.eval()
 print(model)
 
 # DataLoader
-data_loader = DataLoader(data, num_workers = args.num_workers, batch_size = 64, shuffle = False, pin_memory = True)
+data_loader = DataLoader(data, num_workers = args.num_workers, batch_size = args.infer_batchsize, shuffle = False, pin_memory = True)
 
 # Infer
 all_inference = []
