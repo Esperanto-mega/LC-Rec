@@ -172,7 +172,7 @@ class Trainer(object):
         return train_loss_output + "]"
 
 
-    def fit(self, data):
+    def fit(self, data, val_data):
 
         # cur_eval_step = 0
 
@@ -195,7 +195,7 @@ class Trainer(object):
             # eval
             if (epoch_idx + 1) % self.eval_step == 0:
                 valid_start_time = time()
-                loss, collision_rate = self._valid_epoch(data)
+                loss, collision_rate = self._valid_epoch(val_data)
 
                 # best ckpt
                 if loss < self.best_loss and collision_rate < self.best_collision_rate:
@@ -229,7 +229,3 @@ class Trainer(object):
 
 
         return self.best_loss, self.best_collision_rate
-
-
-
-
