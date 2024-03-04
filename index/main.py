@@ -23,9 +23,8 @@ def parse_args():
     parser.add_argument('--num_workers', type=int, default=4, )
     parser.add_argument('--eval_step', type=int, default=50, help='eval step')
     parser.add_argument('--learner', type=str, default="AdamW", help='optimizer')
-    parser.add_argument("--data_path", type=str,
-                        default="../data/Games/Games.emb-llama-td.npy",
-                        help="Input data path.")
+    parser.add_argument("--data_path", type=str, default="../data/Games/Games.emb-llama-td.npy", help="training data path.")
+    parser.add_argument("--val_data_path", type=str, default="../data/Games/Games.emb-llama-td.npy", help="validation data path.")
 
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='l2 regularization weight')
     parser.add_argument("--dropout_prob", type=float, default=0.0, help="dropout ratio")
@@ -66,6 +65,7 @@ if __name__ == '__main__':
 
     """build dataset"""
     data = EmbDataset(args.data_path)
+    val_data = EmbDataset(args.val_data_path)
     model = RQVAE(in_dim=data.dim,
                   num_emb_list=args.num_emb_list,
                   e_dim=args.e_dim,
@@ -80,11 +80,10 @@ if __name__ == '__main__':
                   sk_iters=args.sk_iters,
                   )
     print(model)
-    data_loader = DataLoader(data,num_workers=args.num_workers,
-                             batch_size=args.batch_size, shuffle=True,
-                             pin_memory=True)
+    data_loader = DataLoader(data, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True, pin_memory=True)
+    val_data_loader = DataLoader(val_data, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False, pin_memory=True)
     trainer = Trainer(args,model)
-    best_loss, best_collision_rate = trainer.fit(data_loader)
+    best_loss, best_collision_rate = trainer.fit(data_loader, val_data_loader)
 
     print("Best Loss",best_loss)
     print("Best Collision Rate", best_collision_rate)
