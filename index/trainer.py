@@ -137,7 +137,7 @@ class Trainer(object):
 
         collision_rate = (num_sample - len(indices_set))/num_sample
 
-        wandb.log({'Val_Total_Loss': total_loss, 'Val_Rec_Loss': loss_recon, 'Val_RQ_Loss': rq_loss, 'Val_Collision_Rate': collision_rate})
+        wandb.log({'Val_Total_Loss': loss, 'Val_Rec_Loss': loss_recon, 'Val_RQ_Loss': rq_loss, 'Val_Collision_Rate': collision_rate})
 
         return total_loss, collision_rate
 
